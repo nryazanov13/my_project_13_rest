@@ -1,38 +1,14 @@
 plugins {
     id 'java'
-    id "io.qameta.allure" version "2.10.0"
 }
-
-group = 'ru.nryazanov'
-version = '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
 }
 
-allure {
-    report {
-        version.set("2.19.0")
-    }
-    adapter { // отвечает за появление папочки build/allure-results
-        aspectjWeaver.set(true) //обработка аннотации @Step
-        frameworks {
-            junit5 { //название фреймворка
-                adapterVersion.set("2.19.0") //версия интеграции фреймворка и Allure
-            }
-        }
-    }
-}
-
 dependencies {
-    testImplementation(
-            "io.rest-assured:rest-assured:5.5.0",
-            'org.junit.jupiter:junit-jupiter-api:5.10.0',
-            'org.slf4j:slf4j-simple:2.0.9',
-            'org.aspectj:aspectjweaver:1.9.20'
-
-    )
-    testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.9.0')
+    testImplementation 'io.rest-assured:rest-assured:5.5.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.0'
 }
 
 tasks.withType(JavaCompile) {
