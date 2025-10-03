@@ -30,17 +30,17 @@ public class RegistrationTests extends TestBase {
     @DisplayName("Не успешная регистрация пользователя с отсутствием пароля")
     void unsuccessfulRegistrationTest() {
         given()
-                .header("x-api-key", API_KEY)
-                .body(userWithEmailOnly)
-                .contentType(ContentType.JSON)
-                .log().uri()
+                    .header("x-api-key", API_KEY)
+                    .body(userWithEmailOnly)
+                    .contentType(ContentType.JSON)
+                    .log().uri()
                 .when()
-                .post("/api/register")
+                    .post("/api/register")
                 .then()
-                .log().status()
-                .log().body()
-                .statusCode(400)
-                .body("error", is("Missing password"));
+                    .log().status()
+                    .log().body()
+                    .statusCode(400)
+                    .body("error", is("Missing password"));
     }
 }
 
