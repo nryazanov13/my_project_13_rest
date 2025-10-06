@@ -30,8 +30,10 @@ public class ReqResTests extends TestBase {
                 .body("data[1].id", is(8))
                 .body("data[1].name", is("chili pepper"))
                 .body("data.id", hasItems(7, 8, 9, 10, 11, 12))
-                .body("data.name", hasItems("sand dollar", "chili pepper", "blue iris",
-                        "mimosa", "turquoise", "honeysuckle"));
+                .body("data.name", hasItems(
+                        "sand dollar", "chili pepper", "blue iris",
+                        "mimosa", "turquoise", "honeysuckle"
+                ));
     }
 
     @Test
@@ -57,9 +59,12 @@ public class ReqResTests extends TestBase {
     @Test
     @DisplayName("Создание пользователя")
     void createUser() {
+        String expectedName = getUserNameFromJson();
+        String expectedJob = getUserJobFromJson();
+
         given()
                 .header("x-api-key", API_KEY)
-                .body(user)
+                .body(userJson)
                 .contentType(ContentType.JSON)
                 .log().uri()
                 .when()
@@ -68,64 +73,80 @@ public class ReqResTests extends TestBase {
                 .log().status()
                 .log().body()
                 .statusCode(201)
-                .body("name", is("morpheus"))
-                .body("job", is("leader"))
+                .body("name", is(expectedName))
+                .body("job", is(expectedJob))
                 .body("id", notNullValue())
                 .body("id", matchesPattern("\\d+"))
-                .body("id.length()", greaterThan(0))
                 .body("createdAt", notNullValue())
                 .body("createdAt", matchesPattern("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"));
     }
 
     @Test
     @DisplayName("Обновление пользователя через метод PUT")
-    void updateUserWithPutMethodTest () {
+    void updateUserWithPutMethodTest() {
+        String userId = createUserAndGetId();
+        waitBetweenRequests();
+
+        String updatedUserJson = generateUserWithNewJobJson();
+        String expectedName = updatedUserJson.split("\"name\": \"")[1].split("\"")[0];
+        String expectedJob = updatedUserJson.split("\"job\": \"")[1].split("\"")[0];
+
         given()
                 .header("x-api-key", API_KEY)
-                .body(userWithNewJob)
+                .body(updatedUserJson)
                 .contentType(ContentType.JSON)
                 .log().uri()
+                .log().body()
                 .when()
-                .put("/users/2")
+                .put("/users/" + userId)
                 .then()
                 .log().status()
                 .log().body()
                 .statusCode(200)
-                .body("name", is("morpheus"))
-                .body("job", is("zion resident"))
+                .body("name", is(expectedName))
+                .body("job", is(expectedJob))
                 .body("createdAt", notNullValue())
                 .body("createdAt", matchesPattern("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"));
     }
 
     @Test
-    @DisplayName("Обновление пользователя через метод PATCH")
-    void updateUserWithPatchMethodTest () {
+    @DisplayName("Обновление пользователя через PATCH")
+    void updateUserWithPatchMethodTest() {
+        String userId = createUserAndGetId();
+        waitBetweenRequests();
+
+        String currentJob = getUserJobFromJson();
+        String partialUpdateJson = "{\"job\": \"Senior " + currentJob + "\"}";
+
         given()
                 .header("x-api-key", API_KEY)
-                .body(userWithNewJob)
+                .body(partialUpdateJson)
                 .contentType(ContentType.JSON)
                 .log().uri()
+                .log().body()
                 .when()
-                .patch("/users/2")
+                .patch("/users/" + userId)
                 .then()
                 .log().status()
                 .log().body()
                 .statusCode(200)
-                .body("name", is("morpheus"))
-                .body("job", is("zion resident"))
+                .body("job", is("Senior " + currentJob))
                 .body("createdAt", notNullValue())
                 .body("createdAt", matchesPattern("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"));
     }
 
     @Test
     @DisplayName("Удаление пользователя")
-    void deleteUserTest () {
+    void deleteUserTest() {
+        String userId = createUserAndGetId();
+        waitBetweenRequests();
+
         given()
                 .header("x-api-key", API_KEY)
                 .contentType(ContentType.JSON)
                 .log().uri()
                 .when()
-                .delete("/users/2")
+                .delete("/users/" + userId)
                 .then()
                 .log().status()
                 .statusCode(204);

@@ -7,8 +7,11 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'io.rest-assured:rest-assured:5.5.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.0'
+    testImplementation(
+            'io.rest-assured:rest-assured:5.5.0',
+            'org.junit.jupiter:junit-jupiter:5.11.0',
+            'com.github.javafaker:javafaker:1.0.2'
+    )
 }
 
 tasks.withType(JavaCompile) {
