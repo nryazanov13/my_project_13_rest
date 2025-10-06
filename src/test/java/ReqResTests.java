@@ -26,14 +26,13 @@ public class ReqResTests extends TestBase {
                 .body("total_pages", is(2))
                 .body("data.size()", is(6))
                 .body("data[0].id", is(7))
-                .body("data[0].name", is("sand dollar"))
+                .body("data[0].first_name", is("Michael"))
+                .body("data[0].last_name", is("Lawson"))
                 .body("data[1].id", is(8))
-                .body("data[1].name", is("chili pepper"))
+                .body("data[1].first_name", is("Lindsay"))
+                .body("data[1].last_name", is("Ferguson"))
                 .body("data.id", hasItems(7, 8, 9, 10, 11, 12))
-                .body("data.name", hasItems(
-                        "sand dollar", "chili pepper", "blue iris",
-                        "mimosa", "turquoise", "honeysuckle"
-                ));
+                .body("data.first_name", hasItems("Michael", "Lindsay", "Tobias", "Byron", "George", "Rachel"));
     }
 
     @Test
@@ -50,10 +49,9 @@ public class ReqResTests extends TestBase {
                 .log().body()
                 .statusCode(200)
                 .body("data.id", is(2))
-                .body("data.name", is("fuchsia rose"))
-                .body("data.year", is(2001))
-                .body("data.color", is("#C74375"))
-                .body("data.pantone_value", is("17-2031"));
+                .body("data.first_name", is("Janet"))
+                .body("data.last_name", is("Weaver"))
+                .body("data.email", is("janet.weaver@reqres.in"));
     }
 
     @Test
@@ -105,8 +103,8 @@ public class ReqResTests extends TestBase {
                 .statusCode(200)
                 .body("name", is(expectedName))
                 .body("job", is(expectedJob))
-                .body("createdAt", notNullValue())
-                .body("createdAt", matchesPattern("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"));
+                .body("updatedAt", notNullValue())
+                .body("updatedAt", matchesPattern("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"));
     }
 
     @Test
@@ -131,8 +129,8 @@ public class ReqResTests extends TestBase {
                 .log().body()
                 .statusCode(200)
                 .body("job", is("Senior " + currentJob))
-                .body("createdAt", notNullValue())
-                .body("createdAt", matchesPattern("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"));
+                .body("updatedAt", notNullValue())
+                .body("updatedAt", matchesPattern("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"));
     }
 
     @Test
