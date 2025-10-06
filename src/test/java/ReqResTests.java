@@ -83,6 +83,7 @@ public class ReqResTests extends TestBase {
     @DisplayName("Обновление пользователя через метод PUT")
     void updateUserWithPutMethodTest() {
         String userId = createUserAndGetId();
+
         waitBetweenRequests();
 
         String updatedUserJson = generateUserWithNewJobJson();
@@ -111,6 +112,7 @@ public class ReqResTests extends TestBase {
     @DisplayName("Обновление пользователя через PATCH")
     void updateUserWithPatchMethodTest() {
         String userId = createUserAndGetId();
+
         waitBetweenRequests();
 
         String currentJob = getUserJobFromJson();
@@ -137,6 +139,7 @@ public class ReqResTests extends TestBase {
     @DisplayName("Удаление пользователя")
     void deleteUserTest() {
         String userId = createUserAndGetId();
+
         waitBetweenRequests();
 
         given()
