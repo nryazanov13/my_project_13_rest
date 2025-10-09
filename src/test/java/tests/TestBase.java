@@ -1,23 +1,23 @@
+package tests;
+
 import com.github.javafaker.Faker;
 import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
+import models.CreateUserResponseModel;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.notNullValue;
+import static specs.RequestSpecs.createUserRequestSpec;
+import static specs.ResponseSpecs.createdResponseSpec;
 
 public class TestBase {
 
-    protected static final String API_KEY = "reqres-free-v1";
     protected Faker faker;
     protected String userJson;
 
     @BeforeAll
     static void setUp() {
-        RestAssured.baseURI = "https://reqres.in";
-        RestAssured.basePath = "/api";
-        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+        RestAssured.baseURI = "https://reqres.in/api";
     }
 
     @BeforeEach
@@ -29,12 +29,6 @@ public class TestBase {
     protected String generateRandomUserJson() {
         String name = faker.name().firstName();
         String job = faker.job().title();
-        return String.format("{\"name\": \"%s\", \"job\": \"%s\"}", name, job);
-    }
-
-    protected String generateUserWithNewJobJson() {
-        String name = faker.name().firstName();
-        String job = faker.job().position();
         return String.format("{\"name\": \"%s\", \"job\": \"%s\"}", name, job);
     }
 
@@ -55,16 +49,15 @@ public class TestBase {
     }
 
     protected String createUserAndGetId() {
-        return given()
-                .header("x-api-key", API_KEY)
+        CreateUserResponseModel response = given()
+                .spec(createUserRequestSpec)
                 .body(userJson)
-                .contentType(ContentType.JSON)
                 .when()
-                .post("/users")
+                .post()
                 .then()
-                .statusCode(201)
-                .body("id", notNullValue())
-                .extract()
-                .path("id");
+                .spec(createdResponseSpec)
+                .extract().as(CreateUserResponseModel.class);
+
+        return response.getId();
     }
 }
