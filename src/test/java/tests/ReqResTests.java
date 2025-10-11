@@ -122,22 +122,25 @@ public class ReqResTests extends TestBase {
     }
 
     @Test
-    @DisplayName("Обновление пользователя через PATCH")
+    @DisplayName("Обновление пользователя через PATCH - частичное обновление")
     void updateUserWithPatchMethodTest() {
-        // Создаем пользователя и сохраняем его данные
+        // 1. Создаем пользователя и сохраняем исходные данные
         UserRequestModel originalUser = generateRandomUser();
         UserResponseModel createdUser = step("Создать пользователя", () ->
                 createUser(originalUser));
 
         String userId = createdUser.getId();
-        String originalName = createdUser.getName(); // Сохраняем исходное имя
+        String originalName = originalUser.getName();
+        String originalJob = originalUser.getJob();
+
         waitBetweenRequests();
 
-        // PATCH - обновляем только job
+        // 2. PATCH - обновляем только job
+        String updatedJob = "Senior Developer";
         UserRequestModel updateRequest = new UserRequestModel();
-        updateRequest.setJob("Senior Developer");
+        updateRequest.setJob(updatedJob);
 
-        UserResponseModel response = step("Обновить через PATCH", () ->
+        UserResponseModel patchResponse = step("Обновить через PATCH", () ->
                 given(requestWithBody)
                         .basePath("/users/{id}")
                         .pathParam("id", userId)
@@ -148,12 +151,27 @@ public class ReqResTests extends TestBase {
                         .spec(successResponseSpec())
                         .extract().as(UserResponseModel.class));
 
-        step("Проверить обновление", () -> {
-            // Проверяем, что job обновился
-            assertEquals("Senior Developer", response.getJob());
-            // Проверяем, что имя осталось прежним
-            assertEquals(originalName, response.getName());
-            assertNotNull(response.getUpdatedAt());
+        // 3. ДЕЛАЕМ GET ЗАПРОС для проверки реального состояния
+        UserResponseModel getUserResponse = step("Получить пользователя после PATCH", () ->
+                given(baseRequestSpec)
+                        .basePath("/users/{id}")
+                        .pathParam("id", userId)
+                        .when()
+                        .get()
+                        .then()
+                        .spec(successResponseSpec())
+                        .extract().as(UserResponseModel.class));
+
+        // 4. ПРОВЕРКИ
+        step("Проверить частичное обновление", () -> {
+            // Проверяем PATCH ответ (может содержать только обновленные поля)
+            assertEquals(updatedJob, patchResponse.getJob());
+            assertNotNull(patchResponse.getUpdatedAt());
+
+            // ГЛАВНАЯ ПРОВЕРКА: GET запрос показывает реальное состояние
+            assertEquals(updatedJob, getUserResponse.getJob(), "Job должен обновиться");
+            assertEquals(originalName, getUserResponse.getName(), "Name должен остаться неизменным");
+            assertNotEquals(originalJob, getUserResponse.getJob(), "Job должен измениться");
         });
     }
 
