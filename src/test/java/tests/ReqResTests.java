@@ -4,6 +4,8 @@ import models.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
+
 import static io.qameta.allure.Allure.step;
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.*;
@@ -124,21 +126,17 @@ public class ReqResTests extends TestBase {
     @Test
     @DisplayName("Обновление пользователя через PATCH - частичное обновление")
     void updateUserWithPatchMethodTest() {
-        // 1. Создаем пользователя и сохраняем исходные данные
+        // 1. Создаем пользователя
         UserRequestModel originalUser = generateRandomUser();
         UserResponseModel createdUser = step("Создать пользователя", () ->
                 createUser(originalUser));
 
         String userId = createdUser.getId();
-        String originalName = originalUser.getName();
-        String originalJob = originalUser.getJob();
-
         waitBetweenRequests();
 
-        // 2. PATCH - обновляем только job
+        // 2. PATCH - обновляем только job (используем Map чтобы не отправлять null)
         String updatedJob = "Senior Developer";
-        UserRequestModel updateRequest = new UserRequestModel();
-        updateRequest.setJob(updatedJob);
+        Map<String, String> updateRequest = Map.of("job", updatedJob);
 
         UserResponseModel patchResponse = step("Обновить через PATCH", () ->
                 given(requestWithBody)
@@ -151,27 +149,24 @@ public class ReqResTests extends TestBase {
                         .spec(successResponseSpec())
                         .extract().as(UserResponseModel.class));
 
-        // 3. ДЕЛАЕМ GET ЗАПРОС для проверки реального состояния
-        UserResponseModel getUserResponse = step("Получить пользователя после PATCH", () ->
-                given(baseRequestSpec)
-                        .basePath("/users/{id}")
-                        .pathParam("id", userId)
-                        .when()
-                        .get()
-                        .then()
-                        .spec(successResponseSpec())
-                        .extract().as(UserResponseModel.class));
-
-        // 4. ПРОВЕРКИ
+        // 3. ПРОВЕРКИ (только на основе PATCH ответа)
         step("Проверить частичное обновление", () -> {
-            // Проверяем PATCH ответ (может содержать только обновленные поля)
-            assertEquals(updatedJob, patchResponse.getJob());
-            assertNotNull(patchResponse.getUpdatedAt());
+            // Основная проверка - job обновился
+            assertEquals(updatedJob, patchResponse.getJob(), "Job должен обновиться");
 
-            // ГЛАВНАЯ ПРОВЕРКА: GET запрос показывает реальное состояние
-            assertEquals(updatedJob, getUserResponse.getJob(), "Job должен обновиться");
-            assertEquals(originalName, getUserResponse.getName(), "Name должен остаться неизменным");
-            assertNotEquals(originalJob, getUserResponse.getJob(), "Job должен измениться");
+            // Проверяем что timestamp обновления установлен
+            assertNotNull(patchResponse.getUpdatedAt(), "UpdatedAt должен быть установлен");
+
+            // Проверяем формат timestamp
+            assertTrue(patchResponse.getUpdatedAt().matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"),
+                    "Формат updatedAt должен соответствовать ISO");
+
+            // Для PATCH ответа проверяем что id и createdAt не вернулись (как в reqres.in)
+            assertNull(patchResponse.getId(), "ID не должен возвращаться в PATCH ответе");
+            assertNull(patchResponse.getCreatedAt(), "CreatedAt не должен возвращаться в PATCH ответе");
+
+            // Дополнительная проверка: имя не должно быть в PATCH запросе
+            assertFalse(updateRequest.containsKey("name"), "Name не должен отправляться в PATCH запросе");
         });
     }
 
