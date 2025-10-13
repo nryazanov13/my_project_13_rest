@@ -13,21 +13,4 @@ public class ResponseSpecs {
                 .log(ALL)
                 .build();
     }
-
-    public static ResponseSpecification successResponseSpec() {
-        return responseSpec(200);
-    }
-
-    public static ResponseSpecification createdResponseSpec() {
-        return responseSpec(201);
-    }
-
-    public static ResponseSpecification noContentResponseSpec() {
-        return responseSpec(204);
-    }
-
-    public static ResponseSpecification notFoundResponseSpec() {
-        return responseSpec(404);
-    }
-
 }

@@ -1,24 +1,17 @@
 package tests;
 
 import com.github.javafaker.Faker;
-import io.restassured.RestAssured;
 import models.UserRequestModel;
 import models.UserResponseModel;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 
 import static io.restassured.RestAssured.given;
 import static specs.RequestSpecs.requestWithBody;
-import static specs.ResponseSpecs.createdResponseSpec;
+import static specs.ResponseSpecs.responseSpec;
 
 public class TestBase {
 
     protected Faker faker;
-
-    @BeforeAll
-    static void setUp() {
-        RestAssured.baseURI = "https://reqres.in/api";
-    }
 
     @BeforeEach
     void initTestData() {
@@ -28,12 +21,11 @@ public class TestBase {
     protected UserResponseModel createUser(UserRequestModel userRequest) {
         return given()
                 .spec(requestWithBody)
-                .basePath("/users")
                 .body(userRequest)
                 .when()
-                .post()
+                .post("users")
                 .then()
-                .spec(createdResponseSpec())
+                .spec(responseSpec(201))
                 .extract().as(UserResponseModel.class);
     }
 

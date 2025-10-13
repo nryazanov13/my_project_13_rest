@@ -19,12 +19,11 @@ public class ReqResTests extends TestBase {
     void getListOfUsersTest() {
         UsersListResponseModel response = step("Получить список пользователей", () ->
                 given(baseRequestSpec)
-                        .basePath("/users")
                         .queryParam("page", 2)
                         .when()
-                        .get()
+                        .get("users")
                         .then()
-                        .spec(successResponseSpec())
+                        .spec(responseSpec(200))
                         .extract().as(UsersListResponseModel.class));
 
         step("Проверить данные ответа для списка пользователей", () -> {
@@ -49,12 +48,11 @@ public class ReqResTests extends TestBase {
     void getUserByIdTest() {
         SingleUserResponseModel response = step("Получить пользователя по ID", () ->
                 given(baseRequestSpec)
-                        .basePath("/users/{id}")
                         .pathParam("id", 2)
                         .when()
-                        .get()
+                        .get("users/{id}")
                         .then()
-                        .spec(successResponseSpec())
+                        .spec(responseSpec(200))
                         .extract().as(SingleUserResponseModel.class));
 
         step("Проверить данные пользователя", () -> {
@@ -72,12 +70,11 @@ public class ReqResTests extends TestBase {
 
         UserResponseModel response = step("Создать пользователя", () ->
                 given(requestWithBody)
-                        .basePath("/users")
                         .body(request)
                         .when()
-                        .post()
+                        .post("users")
                         .then()
-                        .spec(createdResponseSpec())
+                        .spec(responseSpec(201))
                         .extract().as(UserResponseModel.class));
 
         step("Проверить созданного пользователя", () -> {
@@ -104,13 +101,12 @@ public class ReqResTests extends TestBase {
 
         UserResponseModel response = step("Обновить пользователя через PUT", () ->
                 given(requestWithBody)
-                        .basePath("/users/{id}")
                         .pathParam("id", userId)
                         .body(request)
                         .when()
-                        .put()
+                        .put("users/{id}")
                         .then()
-                        .spec(successResponseSpec())
+                        .spec(responseSpec(200))
                         .extract().as(UserResponseModel.class));
 
         step("Проверить обновленного пользователя", () -> {
@@ -127,11 +123,9 @@ public class ReqResTests extends TestBase {
     @DisplayName("Обновление пользователя через PATCH - частичное обновление")
     void updateUserWithPatchMethodTest() {
         // 1. Создаем пользователя
-        UserRequestModel originalUser = generateRandomUser();
-        UserResponseModel createdUser = step("Создать пользователя", () ->
-                createUser(originalUser));
+        String userId = step("Создать пользователя", () ->
+                createRandomUserAndGetId()); // Убрали лишние переменные
 
-        String userId = createdUser.getId();
         waitBetweenRequests();
 
         // 2. PATCH - обновляем только job (используем Map чтобы не отправлять null)
@@ -140,13 +134,12 @@ public class ReqResTests extends TestBase {
 
         UserResponseModel patchResponse = step("Обновить через PATCH", () ->
                 given(requestWithBody)
-                        .basePath("/users/{id}")
                         .pathParam("id", userId)
                         .body(updateRequest)
                         .when()
-                        .patch()
+                        .patch("users/{id}")
                         .then()
-                        .spec(successResponseSpec())
+                        .spec(responseSpec(200))
                         .extract().as(UserResponseModel.class));
 
         // 3. ПРОВЕРКИ (только на основе PATCH ответа)
@@ -180,20 +173,18 @@ public class ReqResTests extends TestBase {
 
         step("Удалить пользователя", () ->
                 given(baseRequestSpec)
-                        .basePath("/users/{id}")
                         .pathParam("id", userId)
                         .when()
-                        .delete()
+                        .delete("users/{id}")
                         .then()
-                        .spec(noContentResponseSpec()));
+                        .spec(responseSpec(204)));
 
         step("Проверить что пользователь удален", () ->
                 given(baseRequestSpec)
-                        .basePath("/users/{id}")
                         .pathParam("id", userId)
                         .when()
-                        .get()
+                        .get("users/{id}")
                         .then()
-                        .spec(notFoundResponseSpec()));
+                        .spec(responseSpec(404)));
     }
 }
