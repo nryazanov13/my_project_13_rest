@@ -69,7 +69,7 @@ public class ReqResTests extends TestBase {
         UserRequestModel request = generateRandomUser();
 
         UserResponseModel response = step("Создать пользователя", () ->
-                given(requestWithBody)
+                given(baseRequestSpec)
                         .body(request)
                         .when()
                         .post("users")
@@ -100,7 +100,7 @@ public class ReqResTests extends TestBase {
         UserRequestModel request = new UserRequestModel("Updated Name", "Senior Developer");
 
         UserResponseModel response = step("Обновить пользователя через PUT", () ->
-                given(requestWithBody)
+                given(baseRequestSpec)
                         .pathParam("id", userId)
                         .body(request)
                         .when()
@@ -133,7 +133,7 @@ public class ReqResTests extends TestBase {
         Map<String, String> updateRequest = Map.of("job", updatedJob);
 
         UserResponseModel patchResponse = step("Обновить через PATCH", () ->
-                given(requestWithBody)
+                given(baseRequestSpec)
                         .pathParam("id", userId)
                         .body(updateRequest)
                         .when()
